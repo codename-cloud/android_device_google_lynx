@@ -21,6 +21,18 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     HbmSVManagerOverlayLynx
 
+# Viper4Android FX
+-include packages/apps/ViPER4AndroidFX/config.mk
+
+# PixelSupport
+include device/google/gs-common/pixelsupport/pixelsupport.mk
+
+# Ship Google Face Unlock ( GFU )
+TARGET_SUPPORTS_GFU := true
+
+# Device Supports Face Unlock
+TARGET_FACE_UNLOCK_SUPPORTED := true
+
 # IWLAN
 PRODUCT_PACKAGES += \
     Iwlan

@@ -3,6 +3,7 @@
 # product partition
 
 # AiAi
+product/priv-app/AICorePrebuilt-aicore_20250130.00_RC01/AICorePrebuilt-aicore_20250130.00_RC01.apk;PRESIGNED
 product/priv-app/DeviceIntelligenceNetworkPrebuilt-astrea_20240329.00_RC02/DeviceIntelligenceNetworkPrebuilt-astrea_20240329.00_RC02.apk;PRESIGNED
 product/priv-app/DevicePersonalizationPrebuiltPixel2022-bfinal_aiai_20250217.00_RC08/DevicePersonalizationPrebuiltPixel2022-bfinal_aiai_20250217.00_RC08.apk;PRESIGNED
 
@@ -12,6 +13,9 @@ product/etc/firmware/music_detector.descriptor
 product/etc/firmware/music_detector.sound_model
 product/etc/firmware/music_detector.sound_model_2
 product/etc/firmware/music_detector.sound_model_tflite
+
+# Camera
+product/priv-app/GoogleCamera/GoogleCamera.apk;OVERRIDES=Aperture,Camera2;PRESIGNED
 
 # Camera extensions
 product/etc/permissions/androidx.camera.extensions.impl.xml
