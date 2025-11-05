@@ -27,14 +27,13 @@ TARGET_SCREEN_WIDTH := 1080
 
 AXION_CAMERA_REAR_INFO := 64,13
 AXION_CAMERA_FRONT_INFO := 13
-AXION_MAINTAINER := KCD - test build
+AXION_MAINTAINER := rmp
 
 TARGET_INCLUDE_VIPERFX := true
-WITH_PIXEL_OVERLAYS := true
 
 PRODUCT_BUILD_PROP_OVERRIDES += \
-    BuildDesc="lynx-user 16 BP2A.250805.005 13691446 release-keys" \
-    BuildFingerprint=google/lynx/lynx:16/BP2A.250805.005/13691446:user/release-keys \
+    BuildDesc="lynx-user 15 BP1A.250505.005.B1 13277630 release-keys" \
+    BuildFingerprint=google/lynx/lynx:15/BP1A.250505.005.B1/13277630:user/release-keys \
     DeviceProduct=$(DEVICE_CODENAME)
 
 $(call inherit-product, $(VENDOR_PATH)/$(DEVICE_CODENAME)-vendor.mk)

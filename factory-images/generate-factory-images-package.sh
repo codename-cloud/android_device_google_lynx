@@ -1,5 +1,6 @@
-#
-# Copyright 2021 The Android Open-Source Project
+#!/bin/sh
+
+# Copyright 2023 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,22 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-TARGET_LINUX_KERNEL_VERSION := 5.10
-
-DEVICE_USES_NO_TRUSTY := true
-USE_SWIFTSHADER := true
-BOARD_USES_SWIFTSHADER := true
-
-$(call inherit-product, device/google/gs201/aosp_common.mk)
-$(call inherit-product, device/google/lynx/device-lynx.mk)
-
-PRODUCT_NAME := aosp_lynx
-PRODUCT_DEVICE := lynx
-PRODUCT_MODEL := AOSP on Lynx
-PRODUCT_BRAND := Android
-PRODUCT_MANUFACTURER := Google
-
-DEVICE_MANIFEST_FILE := \
-	device/google/lynx/manifest.xml
+source ../../../common/clear-factory-images-variables.sh
+BUILD=9456232
+DEVICE=lynx
+PRODUCT=lynx
+VERSION=td4a.221205.017
+SRCPREFIX=signed-
+BOOTLOADER=lynx-1.0-9450676
+RADIO=g5300n-221222-221226-b-9437664
+source ../../../common/generate-factory-images-common.sh

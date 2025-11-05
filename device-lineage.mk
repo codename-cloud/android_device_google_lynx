@@ -21,18 +21,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     HbmSVManagerOverlayLynx
 
-# Viper4Android FX
--include packages/apps/ViPER4AndroidFX/config.mk
-
-# PixelSupport
-include device/google/gs-common/pixelsupport/pixelsupport.mk
-
-# Ship Google Face Unlock ( GFU )
-TARGET_SUPPORTS_GFU := true
-
-# Device Supports Face Unlock
-TARGET_FACE_UNLOCK_SUPPORTED := true
-
 # IWLAN
 PRODUCT_PACKAGES += \
     Iwlan
@@ -42,9 +30,11 @@ include device/google/gs-common/wireless_charger/wireless_charger.mk
 
 # Build necessary packages for vendor
 
-# Dumpstate
+# Codec2
 PRODUCT_PACKAGES += \
-    dump_gsc.sh
+    libacryl \
+    libacryl_hdr_plugin \
+    libexynosv4l2
 
 # Fingerprint
 PRODUCT_COPY_FILES += \

@@ -1,5 +1,5 @@
 #
-# Copyright 2021 The Android Open-Source Project
+# Copyright (C) 2021 The Android Open-Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
 # limitations under the License.
 #
 
-TARGET_LINUX_KERNEL_VERSION := 5.10
+AUDIO_FACTORY_TABLE_FOLDER := lynx
 
-DEVICE_USES_NO_TRUSTY := true
-USE_SWIFTSHADER := true
-BOARD_USES_SWIFTSHADER := true
+# Mixer Path Configuration for Audio Factory
+PRODUCT_COPY_FILES += \
+    device/google/lynx/audio/$(AUDIO_FACTORY_TABLE_FOLDER)/config/mixer_paths_factory.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_factory.xml
 
-$(call inherit-product, device/google/gs201/aosp_common.mk)
-$(call inherit-product, device/google/lynx/device-lynx.mk)
-
-PRODUCT_NAME := aosp_lynx
-PRODUCT_DEVICE := lynx
-PRODUCT_MODEL := AOSP on Lynx
-PRODUCT_BRAND := Android
-PRODUCT_MANUFACTURER := Google
-
-DEVICE_MANIFEST_FILE := \
-	device/google/lynx/manifest.xml

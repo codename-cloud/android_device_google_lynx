@@ -15,9 +15,16 @@
 #
 
 TARGET_LINUX_KERNEL_VERSION := $(RELEASE_KERNEL_LYNX_VERSION)
-TARGET_KERNEL_DEVICE := lynx
-TARGET_KERNEL_DIR := device/google/$(TARGET_KERNEL_DEVICE)-kernels/$(TARGET_LINUX_KERNEL_VERSION)
-TARGET_KERNEL_PLATFORM_SOURCE := google/gs-$(TARGET_LINUX_KERNEL_VERSION)
+# Keeps flexibility for kasan and ufs builds
+TARGET_KERNEL_DIR ?= $(RELEASE_KERNEL_LYNX_DIR)
+TARGET_BOARD_KERNEL_HEADERS ?= $(RELEASE_KERNEL_LYNX_DIR)/kernel-headers
+
+$(call inherit-product-if-exists, vendor/google_devices/lynx/prebuilts/device-vendor-lynx.mk)
+$(call inherit-product-if-exists, vendor/google_devices/gs201/prebuilts/device-vendor.mk)
+$(call inherit-product-if-exists, vendor/google_devices/gs201/proprietary/device-vendor.mk)
+$(call inherit-product-if-exists, vendor/google_devices/lynx/proprietary/lynx/device-vendor-lynx.mk)
+$(call inherit-product-if-exists, vendor/google_devices/lynx/proprietary/device-vendor.mk)
+$(call inherit-product-if-exists, vendor/google_devices/lynx/proprietary/WallpapersLynx.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/google/lynx/lynx/overlay
 
@@ -38,6 +45,14 @@ PRODUCT_COPY_FILES += \
 # Recovery files
 PRODUCT_COPY_FILES += \
         device/google/lynx/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.lynx.rc
+
+# insmod files. Kernel 5.10 prebuilts don't provide these yet, so provide our
+# own copy if they're not in the prebuilts.
+# TODO(b/369686096): drop this when 5.10 is gone.
+ifeq ($(wildcard $(TARGET_KERNEL_DIR)/init.insmod.*.cfg),)
+PRODUCT_COPY_FILES += \
+	device/google/lynx/init.insmod.lynx.cfg:$(TARGET_COPY_OUT_VENDOR_DLKM)/etc/init.insmod.lynx.cfg
+endif
 
 # Camera
 PRODUCT_COPY_FILES += \
@@ -142,6 +157,15 @@ include device/google/lynx/bluetooth/qti_default.mk
 # 	ro.hardware.keystore=software \
 # 	ro.hardware.gatekeeper=software
 
+# Fingerprint HAL
+GOODIX_CONFIG_BUILD_VERSION := g7_trusty
+$(call inherit-product-if-exists, vendor/goodix/udfps/configuration/udfps_common.mk)
+ifeq ($(filter factory%, $(TARGET_PRODUCT)),)
+$(call inherit-product-if-exists, vendor/goodix/udfps/configuration/udfps_shipping.mk)
+else
+$(call inherit-product-if-exists, vendor/goodix/udfps/configuration/udfps_factory.mk)
+endif
+
 # Vibrator HAL
 $(call soong_config_set,haptics,kernel_ver,v$(subst .,_,$(TARGET_LINUX_KERNEL_VERSION)))
 ADAPTIVE_HAPTICS_FEATURE := adaptive_haptics_v1
@@ -159,22 +183,36 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     vendor.audio.hapticgenerator.distortion.output.gain=0.29
 
+# Trusty liboemcrypto.so
+PRODUCT_SOONG_NAMESPACES += vendor/google_devices/lynx/prebuilts
+
 # Location
-PRODUCT_COPY_FILES += \
-    device/google/lynx/location/lhd_user.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/lhd.conf \
-    device/google/lynx/location/scd_user.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/scd.conf
-ifneq (,$(filter 6.1, $(TARGET_LINUX_KERNEL_VERSION)))
+ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
     PRODUCT_COPY_FILES += \
-        device/google/lynx/location/gps_user.6.1.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+        device/google/lynx/location/lhd.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/lhd.conf \
+        device/google/lynx/location/scd.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/scd.conf
+    ifneq (,$(filter 6.1, $(TARGET_LINUX_KERNEL_VERSION)))
+        PRODUCT_COPY_FILES += \
+            device/google/lynx/location/gps.6.1.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+    else
+        PRODUCT_COPY_FILES += \
+            device/google/lynx/location/gps.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+    endif
 else
     PRODUCT_COPY_FILES += \
-        device/google/lynx/location/gps_user.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+        device/google/lynx/location/lhd_user.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/lhd.conf \
+        device/google/lynx/location/scd_user.conf.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/scd.conf
+    ifneq (,$(filter 6.1, $(TARGET_LINUX_KERNEL_VERSION)))
+        PRODUCT_COPY_FILES += \
+            device/google/lynx/location/gps_user.6.1.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+    else
+        PRODUCT_COPY_FILES += \
+            device/google/lynx/location/gps_user.xml.l10:$(TARGET_COPY_OUT_VENDOR)/etc/gnss/gps.xml
+    endif
 endif
 
 # Wifi HAL
-PRODUCT_SOONG_NAMESPACES += \
-    hardware/qcom/wlan \
-    hardware/qcom/wlan/wcn6740
+PRODUCT_SOONG_NAMESPACES += hardware/qcom/wlan/wcn6740
 
 # DCK properties based on target
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -237,7 +275,6 @@ PRODUCT_PRODUCT_PROPERTIES += \
 # Fingerprint als feed forward
 PRODUCT_VENDOR_PROPERTIES += \
     persist.vendor.udfps.als_feed_forward_supported=true \
-    persist.vendor.udfps.fps_touch_handler_supported=false \
     persist.vendor.udfps.lhbm_controlled_in_hal_supported=true
 
 # Hide cutout overlays
@@ -289,6 +326,12 @@ PRODUCT_PRODUCT_PROPERTIES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.audio.cca.enabled=false
 
+# eng specific
+ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
+    PRODUCT_COPY_FILES += \
+        device/google/gs201/init.hardware.wlc.rc.userdebug:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.wlc.rc
+endif
+
 # SKU specific RROs
 PRODUCT_PACKAGES += \
     SettingsOverlayG82U8 \
@@ -309,3 +352,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 # Raven: 0x410B
 PRODUCT_PRODUCT_PROPERTIES += \
     bluetooth.device_id.product_id=16651
+
+# ETM
+ifneq (,$(RELEASE_ETM_IN_USERDEBUG_ENG))
+ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
+$(call inherit-product-if-exists, device/google/common/etm/device-userdebug-modules.mk)
+endif
+endif
